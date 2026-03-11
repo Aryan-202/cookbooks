@@ -88,7 +88,7 @@ class OptimizationEngine:
                     f"High GPU utilization ({gpu_usage}%) → "
                     "reducing context, capping tokens, switching to lightweight model."
                 )
-                gpu_override_model  = "phi3:latest"
+                gpu_override_model  = "phi3:mini"
                 gpu_override_ctx    = min(dynamic_ctx, 256)
                 gpu_override_tokens = 128
 
@@ -106,7 +106,7 @@ class OptimizationEngine:
         # ------------------------------------------------------------------
         if ram_usage > 95.0:
             ram_trigger = "High RAM usage detected → reducing context and switching to lightweight model."
-            model      = gpu_override_model or "phi3:latest"
+            model      = gpu_override_model or "phi3:mini"
             num_ctx    = min(gpu_override_ctx or dynamic_ctx, 256)
             num_predict = 128
             temperature = 0.2
@@ -116,7 +116,7 @@ class OptimizationEngine:
             
         elif ram_usage >= 65.0:
             ram_trigger = "Medium RAM pressure → capping context size and limiting token span."
-            model      = gpu_override_model or ("llama3.2:latest" if complexity_score > 1 else "phi3:latest")
+            model      = gpu_override_model or ("llama3.2:latest" if complexity_score > 1 else "phi3:mini")
             num_ctx    = min(gpu_override_ctx or dynamic_ctx, 1024)
             num_predict = gpu_override_tokens or 256
             temperature = 0.4
@@ -125,7 +125,7 @@ class OptimizationEngine:
             num_batch = 128
             
         else:  # RAM usage < 65%
-            model      = gpu_override_model or ("llama3.2:latest" if complexity_score > 1 else "phi3:latest")
+            model      = gpu_override_model or ("llama3.2:latest" if complexity_score > 1 else "phi3:mini")
             num_ctx    = gpu_override_ctx or dynamic_ctx
             num_predict = gpu_override_tokens or 512
             temperature = 0.6 if complexity_score > 1 else 0.3

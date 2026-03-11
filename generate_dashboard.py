@@ -21,6 +21,13 @@ def generate_dashboard(csv_path=None, output_path=None):
                 row['Tokens/sec'] = float(row['Tokens/sec'])
                 row['CPU(%)'] = float(row['CPU(%)'])
                 row['RAM(%)'] = float(row['RAM(%)'])
+                
+                # Parse GPU metrics if they exist in the CSV
+                gpu_val = row.get('GPU(%)', '0')
+                gmem_val = row.get('GPUMem(%)', '0')
+                row['GPU(%)'] = float(gpu_val) if gpu_val != 'N/A' else 0.0
+                row['GPUMem(%)'] = float(gmem_val) if gmem_val != 'N/A' else 0.0
+                
                 results.append(row)
             except (ValueError, KeyError): continue
 
@@ -42,6 +49,8 @@ def generate_dashboard(csv_path=None, output_path=None):
             'Tokens/sec': round(sum(r['Tokens/sec'] for r in data_list) / count, 2),
             'CPU(%)': round(sum(r['CPU(%)'] for r in data_list) / count, 1),
             'RAM(%)': round(sum(r['RAM(%)'] for r in data_list) / count, 1),
+            'GPU(%)': round(sum(r['GPU(%)'] for r in data_list) / count, 1),
+            'GPUMem(%)': round(sum(r['GPUMem(%)'] for r in data_list) / count, 1),
             'Model': data_list[-1]['Model'], # Latest model used
             'Count': count
         }
@@ -53,6 +62,7 @@ def generate_dashboard(csv_path=None, output_path=None):
     labels = [f"Run {i+1}" for i in range(len(display_results))]
     tokens_data = [r['Tokens/sec'] for r in display_results]
     eff_data = [r['EfficiencyScore'] for r in display_results]
+    gpu_data = [r['GPU(%)'] for r in display_results]
     modes = [r['Mode'] for r in display_results]
 
     html = f"""<!DOCTYPE html>
@@ -96,6 +106,15 @@ def generate_dashboard(csv_path=None, output_path=None):
         .m-item span:first-child {{ font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }}
         .m-item span:last-child {{ font-size: 1.3rem; font-weight: 700; }}
 
+        .gpu-row {{
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }}
+
         .graph-area {{ grid-area: graph; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; }}
         .table-area {{ grid-area: table; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-top: 10px; }}
         
@@ -132,7 +151,7 @@ def generate_dashboard(csv_path=None, output_path=None):
                 {render_metrics(avg_opt)}
             </div>
             <div style="padding: 15px; background: rgba(34,211,238,0.03); border-radius: 12px; font-size: 0.8rem; border: 1px dashed var(--border);">
-                Notice: The system switches models based on real-time RAM usage and complexity score.
+                Notice: The system switches models based on real-time RAM/GPU usage and complexity score.
             </div>
         </div>
 
@@ -150,7 +169,8 @@ def generate_dashboard(csv_path=None, output_path=None):
                         <th>Model</th>
                         <th>Latency</th>
                         <th>Tokens/s</th>
-                        <th>CPU/RAM %</th>
+                        <th>Sys (C/R)</th>
+                        <th>GPU (U/M)</th>
                         <th>Efficiency</th>
                     </tr>
                 </thead>
@@ -172,7 +192,19 @@ def generate_dashboard(csv_path=None, output_path=None):
                         label: 'Throughput (T/s)',
                         data: {json.dumps(tokens_data)},
                         backgroundColor: {json.dumps(['rgba(248, 113, 113, 0.7)' if m == 'Unoptimized' else 'rgba(34, 211, 238, 0.7)' for m in modes])},
-                        borderRadius: 6
+                        borderRadius: 6,
+                        order: 2
+                    }},
+                    {{
+                        label: 'GPU Utilization (%)',
+                        data: {json.dumps(gpu_data)},
+                        type: 'line',
+                        borderColor: '#22d3ee',
+                        borderWidth: 1,
+                        pointRadius: 2,
+                        fill: true,
+                        backgroundColor: 'rgba(34, 211, 238, 0.1)',
+                        order: 3
                     }},
                     {{
                         label: 'Efficiency Index',
@@ -182,7 +214,8 @@ def generate_dashboard(csv_path=None, output_path=None):
                         borderWidth: 2,
                         pointRadius: 4,
                         fill: false,
-                        yAxisID: 'y1'
+                        yAxisID: 'y1',
+                        order: 1
                     }}
                 ]
             }},
@@ -190,8 +223,17 @@ def generate_dashboard(csv_path=None, output_path=None):
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {{
-                    y: {{ grid: {{ color: 'rgba(255,255,255,0.05)' }}, ticks: {{ color: '#9ca3af' }} }},
-                    y1: {{ position: 'right', grid: {{ display: false }}, ticks: {{ color: '#22d3ee' }} }},
+                    y: {{ 
+                        grid: {{ color: 'rgba(255,255,255,0.05)' }}, 
+                        ticks: {{ color: '#9ca3af' }},
+                        title: {{ display: true, text: 'Tokens/s & GPU %', color: '#9ca3af' }}
+                    }},
+                    y1: {{ 
+                        position: 'right', 
+                        grid: {{ display: false }}, 
+                        ticks: {{ color: '#22d3ee' }},
+                        title: {{ display: true, text: 'Efficiency Score', color: '#22d3ee' }}
+                    }},
                     x: {{ grid: {{ display: false }}, ticks: {{ color: '#9ca3af' }} }}
                 }},
                 plugins: {{ legend: {{ position: 'bottom', labels: {{ color: '#9ca3af', boxWidth: 12 }} }} }}
@@ -211,6 +253,10 @@ def render_metrics(avg):
         <div class="m-item"><span>Latency</span><span>{avg['Latency(s)']}s</span></div>
         <div class="m-item"><span>Speed</span><span>{avg['Tokens/sec']}</span></div>
         <div class="m-item"><span>Score</span><span>{avg['EfficiencyScore']}</span></div>
+    </div>
+    <div class="gpu-row">
+        <div class="m-item"><span>GPU Util</span><span>{avg['GPU(%)']}%</span></div>
+        <div class="m-item"><span>GPU VRAM</span><span>{avg['GPUMem(%)']}%</span></div>
     </div>"""
 
 def generate_table_body(results):
@@ -224,7 +270,8 @@ def generate_table_body(results):
             <td style="font-weight:600;">{r['Model']}</td>
             <td>{r['Latency(s)']}s</td>
             <td><strong>{r['Tokens/sec']}</strong></td>
-            <td>{r['CPU(%)']}% / {r['RAM(%)']}%</td>
+            <td style="font-size: 0.8rem; color: var(--text-dim);">{r['CPU(%)']}% / {r['RAM(%)']}%</td>
+            <td style="color: var(--accent); font-weight: 500;">{r['GPU(%)']}% / {r['GPUMem(%)']}%</td>
             <td style="font-weight:700; color:var(--accent);">{r['EfficiencyScore']}</td>
         </tr>"""
     return rows

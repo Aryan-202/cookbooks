@@ -89,7 +89,7 @@ class Benchmark:
                 gmem_str   = f"GMem {gpu_memory}%" if gpu_memory is not None else "GMem N/A"
 
                 print(
-                    f"Result: {latency:.1f}s | CPU {cpu_usage}% | {gpu_str} | "
+                    f"Result: {latency:.1f}s | CPU {cpu_usage}% | {gpu_str} | {gmem_str} | "
                     f"tok/s {tokens_per_sec:.1f} | Eff {efficiency:.2f}\n"
                 )
                 
