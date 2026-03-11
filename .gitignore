@@ -1,4 +1,12 @@
-.vscode
-__pycache__
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+venv/
+env/
+.env
 logs/
 graphs/outputs/
+.DS_Store
