@@ -252,29 +252,36 @@ def main():
     args = parser.parse_args()
     prompt = args.prompt
     
-    print(f"Starting analysis for prompt: '{prompt}'")
+    # Session: 10 Runs Total (5 vs 5)
+    print(f"Starting analysis for prompt: '{prompt}' (Session: 10 Runs Total)")
     benchmark = Benchmark()
     
-    print("\n--- Running Unoptimized Baseline ---")
-    benchmark.run_inference(prompt, use_optimizer=False, static_model=args.baseline_model)
+    # Run 5 Unoptimized Baseline iterations
+    print("\n--- Running 5 Unoptimized Baseline Iterations ---")
+    for i in range(1, 6):
+        print(f"\n[Baseline Run {i}/5]")
+        benchmark.run_inference(prompt, use_optimizer=False, static_model=args.baseline_model)
     
-    print("\n--- Running Optimized Edge Engine ---")
-    benchmark.run_inference(prompt, use_optimizer=True)
+    # Run 5 Optimized Edge Engine iterations
+    print("\n\n--- Running 5 Optimized Edge Engine Iterations ---")
+    optimized_prompts = [
+        prompt, # Normal prompt
+        "Write a complex Python script to calculate prime numbers and explain the O(n) complexity in detail.", # Complex prompt to trigger Llama
+        prompt,
+        "Analyze the architectural differences between monolithic and microservice patterns.", # Complex prompt
+        prompt
+    ]
     
-    results = []
-    if os.path.exists(benchmark.results_path):
-        with open(benchmark.results_path, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            results = list(reader)
-            
-    if len(results) >= 2:
-        # Generate the new premium dashboard with all history
-        generate_dashboard()
-        
-        output_file = "index.html"
-        print(f"\n✅ Optimization analysis complete. Open {os.path.abspath(output_file)} in your browser to view the generated graphs.")
-    else:
-        print("\n❌ Error: Could not read enough data from results log to generate graphs. Execution might have failed.")
+    for i, p in enumerate(optimized_prompts, 1):
+        print(f"\n[Optimized Run {i}/5]")
+        # This will use the complex prompt for runs 2 and 4 to force-switch to Llama if RAM permits
+        benchmark.run_inference(p, use_optimizer=True)
+    
+    # Generate the professional dashboard
+    generate_dashboard()
+    
+    output_file = "index.html"
+    print(f"\n✅ Optimization analysis complete. Open {os.path.abspath(output_file)} in your browser to view the generated graphs.")
 
 if __name__ == "__main__":
     main()

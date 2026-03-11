@@ -67,8 +67,8 @@ class OptimizationEngine:
         
         ram_trigger = None
         
-        # RAM-aware optimization rules
-        if ram_usage > 80.0:
+        # RAM-aware optimization rules (DEMO: Threshold raised to 95% to show model switching)
+        if ram_usage > 95.0:
             ram_trigger = "High RAM usage detected → reducing context and switching to lightweight model."
             model = "phi3:mini"
             num_ctx = min(dynamic_ctx, 256)
