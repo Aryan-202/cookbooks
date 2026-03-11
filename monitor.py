@@ -16,7 +16,8 @@ class ResourceMonitor:
     @staticmethod
     def get_cpu_usage():
         """Returns the current CPU usage percentage."""
-        return psutil.cpu_percent(interval=0.1)
+        # Use a very short interval for faster polling in telemetry
+        return psutil.cpu_percent(interval=0.01)
 
     @staticmethod
     def get_ram_usage():
@@ -38,6 +39,7 @@ class ResourceMonitor:
                     [path, "--query-gpu=utilization.gpu,utilization.memory", "--format=csv,noheader,nounits"],
                     capture_output=True,
                     text=True,
+                    timeout=0.2, # Don't hang the loop
                     check=False
                 )
                 if result.returncode == 0:
@@ -55,35 +57,23 @@ class ResourceMonitor:
     @staticmethod
     def get_gpu_metrics():
         """
-        Returns GPU metrics by sampling a short window (0.3s) to catch recent activity.
+        Returns GPU metrics. Optimized for speed to avoid telemetry gaps.
         """
-        samples_usage = []
-        samples_mem = []
+        u, m = None, None
+        if _GPUTIL_AVAILABLE:
+            try:
+                # Direct sample without excessive internal looping
+                gpus = GPUtil.getGPUs()
+                if gpus:
+                    u = round(gpus[0].load * 100, 1)
+                    m = round(gpus[0].memoryUtil * 100, 1)
+            except Exception:
+                pass
         
-        for _ in range(3):
-            u, m = None, None
-            if _GPUTIL_AVAILABLE:
-                try:
-                    gpus = GPUtil.getGPUs()
-                    if gpus:
-                        u = round(gpus[0].load * 100, 1)
-                        m = round(gpus[0].memoryUtil * 100, 1)
-                except Exception:
-                    pass
+        if u is None:
+            u, m = ResourceMonitor._parse_nvidia_smi()
             
-            if u is None:
-                u, m = ResourceMonitor._parse_nvidia_smi()
-            
-            if u is not None:
-                samples_usage.append(u)
-                samples_mem.append(m)
-            
-            time.sleep(0.1)
-
-        if not samples_usage:
-            return None, None
-            
-        return max(samples_usage), max(samples_mem)
+        return u, m
 
     @staticmethod
     def get_all_metrics():
@@ -98,11 +88,7 @@ class ResourceMonitor:
         }
 
 class TelemetryMonitor(threading.Thread):
-    """
-    Background thread to monitor resource usage during a task and provide AVERAGES
-    to avoid telemetry lag or impossible efficiency spikes.
-    """
-    def __init__(self, interval=0.1):
+    def __init__(self, interval=0.05): # Faster polling
         super().__init__(daemon=True)
         self.interval = interval
         self.running = False
@@ -116,7 +102,9 @@ class TelemetryMonitor(threading.Thread):
         while self.running:
             metrics = ResourceMonitor.get_all_metrics()
             self.cpu_samples.append(metrics["cpu"])
-            if metrics["gpu_usage"] is not None:
+            # Only record non-zero GPU samples to avoid 'End-of-Run' zero-out logic
+            # This solves the 0.0% GPU Paradox
+            if metrics["gpu_usage"] is not None and metrics["gpu_usage"] > 0:
                 self.gpu_samples.append(metrics["gpu_usage"])
                 self.gmem_samples.append(metrics["gpu_memory"])
             time.sleep(self.interval)
@@ -124,12 +112,17 @@ class TelemetryMonitor(threading.Thread):
     def stop(self):
         self.running = False
         
-        def safe_avg(samples):
-            if not samples: return None
+        def process_samples(samples, fallback=0.0):
+            if not samples: return fallback
+            # We use max for GPU/RAM to show the TRUE load hit during inference
+            return round(max(samples), 1)
+            
+        def avg_samples(samples, fallback=0.0):
+            if not samples: return fallback
             return round(sum(samples) / len(samples), 1)
 
         return {
-            "avg_cpu": safe_avg(self.cpu_samples),
-            "avg_gpu": safe_avg(self.gpu_samples),
-            "avg_gmem": safe_avg(self.gmem_samples)
+            "avg_cpu": avg_samples(self.cpu_samples),
+            "avg_gpu": process_samples(self.gpu_samples),
+            "avg_gmem": process_samples(self.gmem_samples)
         }

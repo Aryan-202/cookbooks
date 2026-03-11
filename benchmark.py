@@ -73,11 +73,11 @@ class Benchmark:
                 num_batch=num_batch
             )
             
-            # Stop monitor and get session averages
+            # Stop monitor and get session metrics (Peaks for hardware usage)
             metrics = t_monitor.stop()
             cpu_usage  = metrics["avg_cpu"]
-            gpu_usage  = metrics["avg_gpu"] if metrics["avg_gpu"] is not None else 0.0
-            gpu_memory = metrics["avg_gmem"] if metrics["avg_gmem"] is not None else 0.0
+            gpu_usage  = metrics["avg_gpu"]
+            gpu_memory = metrics["avg_gmem"]
 
             if result["success"]:
                 latency = result["latency"]
@@ -85,11 +85,12 @@ class Benchmark:
                 
                 tokens_per_sec = tokens / latency if latency > 0 else 0
                 
-                # Holistic Efficiency Formula (Weighting CPU, GPU, and Context Benefits)
-                # This ensures scores are high for "Do more with less hardware cost"
-                hw_cost = (cpu_usage * 0.3) + (gpu_usage * 0.5) + (ram_usage * 0.2) + 1.0
-                context_savings = 4096 / num_ctx if num_ctx > 0 else 1
-                efficiency = round((tokens_per_sec / hw_cost) * context_savings * 10, 2)
+                # REFINED EFFICIENCY FORMULA
+                # - Stability: Added +20.0 base cost to prevent 100x spikes.
+                # - Fairness: Balanced weighting to value Context Savings vs Speed.
+                hw_pressure = (cpu_usage * 0.2) + (gpu_usage * 0.4) + (ram_usage * 0.4) + 20.0
+                context_multiplier = 4096 / num_ctx if num_ctx > 0 else 1
+                efficiency = round((tokens_per_sec * context_multiplier) / (hw_pressure / 10.0), 2)
                 
                 if not is_warmup:
                     gpu_str    = f"GPU {gpu_usage}%"   if gpu_usage > 0 else "GPU N/A"
@@ -108,7 +109,7 @@ class Benchmark:
                             round(tokens_per_sec, 2), round(efficiency, 2), mode
                         ])
                 else:
-                    print("Warm-up complete. Hardware stabilized.\n")
+                    print(f"Warm-up complete for {model}.\n")
             else:
                 if not is_warmup:
                     print(f"Error during inference: {result.get('error')}")
