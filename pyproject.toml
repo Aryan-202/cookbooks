@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cook*"]
+
+[project]
+name = "gpu-cookbooks"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = ["psutil>=7.2.2", "requests>=2.32.5", "setuptools>=82.0.1"]
+
+[project.scripts]
+cook = "cook.cli.commands:main"
