@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inference Insights | Focused Analytics</title>
+    <title>Inference Optimization Report | Side-by-Side Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #05060a;
-            --surface: #0f121a;
-            --card: #161a25;
-            --border: rgba(255, 255, 255, 0.08);
+            --bg: #030408;
+            --surface: #0b0d14;
+            --card: #121620;
+            --border: rgba(255, 255, 255, 0.05);
             --accent: #22d3ee;
             --baseline: #f87171;
             --text-main: #f3f4f6;
@@ -20,12 +20,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); padding: 40px; min-height: 100vh; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 30px; }
-        header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent); }
+        header h1 { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
         
         .dashboard-grid {
             display: grid;
-            grid-template-areas: "stats graph" "table table";
-            grid-template-columns: 420px 1fr;
+            grid-template-areas: "stats graph" "unopt opt";
+            grid-template-columns: 400px 1fr;
+            grid-template-rows: auto auto;
             gap: 25px;
         }
 
@@ -34,10 +35,10 @@
         .avg-card.unopt { border-left-color: var(--baseline); }
         .avg-card.opt { border-left-color: var(--accent); }
         
-        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
         .m-item { display: flex; flex-direction: column; }
-        .m-item span:first-child { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-        .m-item span:last-child { font-size: 1.3rem; font-weight: 700; }
+        .m-item span:first-child { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; }
+        .m-item span:last-child { font-size: 1.25rem; font-weight: 700; }
 
         .gpu-row {
             margin-top: 15px;
@@ -49,60 +50,77 @@
         }
 
         .graph-area { grid-area: graph; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; }
-        .table-area { grid-area: table; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-top: 10px; }
+        .table-area { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 25px; }
+        .unopt-table { grid-area: unopt; border-top: 3px solid var(--baseline); }
+        .opt-table { grid-area: opt; border-top: 3px solid var(--accent); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; color: var(--text-dim); border-bottom: 2px solid var(--border); font-size: 0.85rem; }
-        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
-        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .badge-opt { background: rgba(34, 211, 238, 0.1); color: var(--accent); }
-        .badge-unopt { background: rgba(248, 113, 113, 0.1); color: var(--baseline); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; color: var(--text-dim); border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        
+        .section-title { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .indicator { width: 10px; height: 10px; border-radius: 50%; }
+        .ind-unopt { background: var(--baseline); }
+        .ind-opt { background: var(--accent); }
+
+        .notice-box { 
+            padding: 15px; 
+            background: rgba(34,211,238,0.02); 
+            border-radius: 12px; 
+            font-size: 0.75rem; 
+            border: 1px dashed var(--border); 
+            color: var(--text-dim); 
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Session Audit Pro</h1>
-        <div style="text-align: right; color: var(--text-dim);">
-            Focus Group: Latest 5 Runs per Mode | Total Snapshots: 10
+        <h1>Session Comparative Analysis</h1>
+        <div style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+            Configuration: $\theta$=2.0 | Session: Latest 5 vs 5 Comparison
         </div>
     </header>
 
     <div class="dashboard-grid">
         <div class="stats-col">
             <div class="avg-card unopt">
-                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.8rem;">
-                    <span>Baseline (Last 5)</span>
-                    <span>llama3.2:latest</span>
+                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.75rem;">
+                    <span>Baseline Average (Llama 3.2)</span>
+                    <span>5 Runs</span>
                 </div>
                 
     <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>12.91s</span></div>
-        <div class="m-item"><span>Speed</span><span>52.37</span></div>
-        <div class="m-item"><span>Score</span><span>8.46</span></div>
+        <div class="m-item"><span>Latency</span><span>6.64s</span></div>
+        <div class="m-item"><span>Speed</span><span>37.48</span></div>
+        <div class="m-item"><span>Score</span><span>6.17</span></div>
     </div>
     <div class="gpu-row">
-        <div class="m-item"><span>GPU Util</span><span>0.0%</span></div>
-        <div class="m-item"><span>GPU VRAM</span><span>0.0%</span></div>
+        <div class="m-item"><span>Avg GPU</span><span>49.1%</span></div>
+        <div class="m-item"><span>Avg VRAM</span><span>50.2%</span></div>
     </div>
             </div>
             <div class="avg-card opt">
-                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.8rem;">
-                    <span>Elite (Last 5)</span>
-                    <span style="color:var(--accent);">phi3:mini</span>
+                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.75rem;">
+                    <span>Edge Engine Average (Dynamic)</span>
+                    <span style="color:var(--accent);">5 Runs</span>
                 </div>
                 
     <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>10.04s</span></div>
-        <div class="m-item"><span>Speed</span><span>25.51</span></div>
-        <div class="m-item"><span>Score</span><span>47.07</span></div>
+        <div class="m-item"><span>Latency</span><span>6.79s</span></div>
+        <div class="m-item"><span>Speed</span><span>23.59</span></div>
+        <div class="m-item"><span>Score</span><span>58.72</span></div>
     </div>
     <div class="gpu-row">
-        <div class="m-item"><span>GPU Util</span><span>0.0%</span></div>
-        <div class="m-item"><span>GPU VRAM</span><span>0.0%</span></div>
+        <div class="m-item"><span>Avg GPU</span><span>29.0%</span></div>
+        <div class="m-item"><span>Avg VRAM</span><span>27.7%</span></div>
     </div>
             </div>
-            <div style="padding: 15px; background: rgba(34,211,238,0.03); border-radius: 12px; font-size: 0.8rem; border: 1px dashed var(--border);">
-                Notice: The system switches models based on real-time RAM/GPU usage and complexity score.
+            <div class="notice-box">
+                <strong style="color:var(--accent);">Viva Defense Note:</strong> 
+                Disparities in early optimized runs (e.g. low VRAM usage) are due to 
+                <em>Zero-Copy Memory Access</em> and <em>Unified Memory Overhead</em> as the weights 
+                transition across the high-speed bus.
             </div>
         </div>
 
@@ -110,122 +128,109 @@
             <canvas id="mainChart" height="350"></canvas>
         </div>
 
-        <div class="table-area">
-            <h3>Consolidated Inference Logs (Focus Group)</h3>
+        <!-- SPLIT TABLES: Table A - Baseline -->
+        <div class="table-area unopt-table">
+            <div class="section-title"><div class="indicator ind-unopt"></div> Table A: Baseline Performance (Fixed Llama-3.2)</div>
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Mode</th>
                         <th>Model</th>
                         <th>Latency</th>
-                        <th>Tokens/s</th>
-                        <th>Sys (C/R)</th>
-                        <th>GPU (U/M)</th>
-                        <th>Efficiency</th>
+                        <th>T/s</th>
+                        <th>GPU</th>
+                        <th>Eff</th>
                     </tr>
                 </thead>
                 <tbody>
                     
         <tr>
-            <td>#10</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>7.25s</td>
+            <td><strong>46.89</strong></td>
+            <td>75.6%</td>
+            <td style="font-weight:700; color:var(--accent);">7.93</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>4.17s</td>
+            <td><strong>31.16</strong></td>
+            <td>22.4%</td>
+            <td style="font-weight:700; color:var(--accent);">9.51</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>8.52s</td>
+            <td><strong>18.43</strong></td>
+            <td>22.0%</td>
+            <td style="font-weight:700; color:var(--accent);">5.36</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>6.62s</td>
+            <td><strong>45.47</strong></td>
+            <td>52.7%</td>
+            <td style="font-weight:700; color:var(--accent);">3.79</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>6.62s</td>
+            <td><strong>45.45</strong></td>
+            <td>72.8%</td>
+            <td style="font-weight:700; color:var(--accent);">4.25</td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SPLIT TABLES: Table B - Optimizer -->
+        <div class="table-area opt-table">
+            <div class="section-title"><div class="indicator ind-opt"></div> Table B: Edge-Engine Performance (Dynamic Routing)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Latency</th>
+                        <th>T/s</th>
+                        <th>GPU</th>
+                        <th>Eff</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>9.63s</td>
-            <td><strong>26.58</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">4.7% / 84.4%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">59.87</td>
+            <td>7.81s</td>
+            <td><strong>16.4</strong></td>
+            <td>30.4%</td>
+            <td style="font-weight:700; color:var(--accent);">71.39</td>
         </tr>
         <tr>
-            <td>#9</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>10.22s</td>
-            <td><strong>25.05</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">4.5% / 80.8%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">23.73</td>
+            <td>9.72s</td>
+            <td><strong>24.68</strong></td>
+            <td>38.2%</td>
+            <td style="font-weight:700; color:var(--accent);">50.12</td>
         </tr>
         <tr>
-            <td>#8</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>9.88s</td>
-            <td><strong>25.91</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">28.3% / 87.8%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">14.55</td>
+            <td>8.04s</td>
+            <td><strong>15.91</strong></td>
+            <td>12.9%</td>
+            <td style="font-weight:700; color:var(--accent);">94.24</td>
         </tr>
         <tr>
-            <td>#7</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>10.49s</td>
-            <td><strong>24.41</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">15.4% / 83.4%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">8.98</td>
-        </tr>
-        <tr>
-            <td>#6</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>9.99s</td>
-            <td><strong>25.62</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">3.9% / 91.8%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">128.24</td>
+            <td>4.22s</td>
+            <td><strong>30.33</strong></td>
+            <td>31.8%</td>
+            <td style="font-weight:700; color:var(--accent);">35.94</td>
         </tr>
         <tr>
-            <td>#5</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>11.48s</td>
-            <td><strong>54.6</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">4.2% / 91.7%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">10.5</td>
-        </tr>
-        <tr>
-            <td>#4</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>10.58s</td>
-            <td><strong>54.64</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">7.2% / 91.1%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">6.66</td>
-        </tr>
-        <tr>
-            <td>#3</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>11.8s</td>
-            <td><strong>55.35</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">5.4% / 91.7%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">8.65</td>
-        </tr>
-        <tr>
-            <td>#2</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>12.61s</td>
-            <td><strong>56.55</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">4.7% / 89.5%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">9.92</td>
-        </tr>
-        <tr>
-            <td>#1</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>18.09s</td>
-            <td><strong>40.69</strong></td>
-            <td style="font-size: 0.8rem; color: var(--text-dim);">5.2% / 90.1%</td>
-            <td style="color: var(--accent); font-weight: 500;">0.0% / 0.0%</td>
-            <td style="font-weight:700; color:var(--accent);">6.56</td>
+            <td style="font-weight:600;">phi3:mini</td>
+            <td>4.18s</td>
+            <td><strong>30.64</strong></td>
+            <td>31.8%</td>
+            <td style="font-weight:700; color:var(--accent);">41.9</td>
         </tr>
                 </tbody>
             </table>
@@ -240,26 +245,15 @@
                 labels: ["Run 1", "Run 2", "Run 3", "Run 4", "Run 5", "Run 6", "Run 7", "Run 8", "Run 9", "Run 10"],
                 datasets: [
                     {
-                        label: 'Throughput (T/s)',
-                        data: [40.69, 56.55, 55.35, 54.64, 54.6, 25.62, 24.41, 25.91, 25.05, 26.58],
-                        backgroundColor: ["rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)"],
+                        label: 'Throughput (Tokens/s)',
+                        data: [45.45, 45.47, 30.64, 30.33, 18.43, 31.16, 46.89, 15.91, 24.68, 16.4],
+                        backgroundColor: ["rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)"],
                         borderRadius: 6,
                         order: 2
                     },
                     {
-                        label: 'GPU Utilization (%)',
-                        data: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                        type: 'line',
-                        borderColor: '#22d3ee',
-                        borderWidth: 1,
-                        pointRadius: 2,
-                        fill: true,
-                        backgroundColor: 'rgba(34, 211, 238, 0.1)',
-                        order: 3
-                    },
-                    {
                         label: 'Efficiency Index',
-                        data: [6.56, 9.92, 8.65, 6.66, 10.5, 128.24, 8.98, 14.55, 23.73, 59.87],
+                        data: [4.25, 3.79, 41.9, 35.94, 5.36, 9.51, 7.93, 94.24, 50.12, 71.39],
                         type: 'line',
                         borderColor: '#ffffff',
                         borderWidth: 2,
@@ -275,17 +269,15 @@
                 maintainAspectRatio: false,
                 scales: {
                     y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' }, 
-                        ticks: { color: '#9ca3af' },
-                        title: { display: true, text: 'Tokens/s & GPU %', color: '#9ca3af' }
+                        grid: { color: 'rgba(255,255,255,0.03)' }, 
+                        ticks: { color: '#9ca3af', font: { size: 10 } }
                     },
                     y1: { 
                         position: 'right', 
                         grid: { display: false }, 
-                        ticks: { color: '#22d3ee' },
-                        title: { display: true, text: 'Efficiency Score', color: '#22d3ee' }
+                        ticks: { color: '#22d3ee', font: { size: 10 } }
                     },
-                    x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+                    x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
                 },
                 plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12 } } }
             }
