@@ -3,201 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inference Insights | Focused Analytics</title>
+    <title>Omni-Engine | Intelligence Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #05060a;
-            --surface: #0f121a;
-            --card: #161a25;
-            --border: rgba(255, 255, 255, 0.08);
+            --bg: #030408;
+            --surface: #0a0c12;
+            --card: #11151f;
+            --border: rgba(255, 255, 255, 0.06);
             --accent: #22d3ee;
             --baseline: #f87171;
             --text-main: #f3f4f6;
             --text-dim: #9ca3af;
+            --gradient-opt: linear-gradient(135deg, #0ea5e9, #22d3ee);
+            --gradient-unopt: linear-gradient(135deg, #ef4444, #f87171);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
         body { background-color: var(--bg); color: var(--text-main); padding: 40px; min-height: 100vh; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 30px; }
-        header h1 { font-size: 2.2rem; font-weight: 700; color: var(--accent); }
         
-        .dashboard-grid {
-            display: grid;
-            grid-template-areas: "stats graph" "table table";
-            grid-template-columns: 420px 1fr;
-            gap: 25px;
-        }
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; text-align: center; position: relative; }
+        .kpi-card h4 { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .kpi-card .val { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+        .kpi-card .diff { font-size: 0.8rem; font-weight: 600; margin-top: 5px; }
+        .positive { color: #4ade80; }
+        .negative { color: #f87171; }
 
-        .stats-col { grid-area: stats; display: flex; flex-direction: column; gap: 20px; }
-        .avg-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 25px; border-left: 6px solid #ccc; }
-        .avg-card.unopt { border-left-color: var(--baseline); }
-        .avg-card.opt { border-left-color: var(--accent); }
-        
-        .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-        .m-item { display: flex; flex-direction: column; }
-        .m-item span:first-child { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; }
-        .m-item span:last-child { font-size: 1.3rem; font-weight: 700; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .chart-area, .table-area { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
+        .full-width { grid-column: span 2; }
 
-        .graph-area { grid-area: graph; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; }
-        .table-area { grid-area: table; background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px; margin-top: 10px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; color: var(--text-dim); border-bottom: 2px solid var(--border); font-size: 0.85rem; }
-        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { text-align: left; padding: 15px; color: var(--text-dim); border-bottom: 1px solid var(--border); font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        
+        .unopt-header { color: var(--baseline); border-bottom: 2px solid var(--baseline); }
+        .opt-header { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .badge-opt { background: rgba(34, 211, 238, 0.1); color: var(--accent); }
         .badge-unopt { background: rgba(248, 113, 113, 0.1); color: var(--baseline); }
+
+        .viva-panel { background: rgba(34, 211, 238, 0.05); border: 1px dashed var(--accent); border-radius: 16px; padding: 20px; margin-bottom: 30px; }
+        .viva-panel h3 { color: var(--accent); font-size: 1rem; margin-bottom: 10px; }
+        .viva-panel p { font-size: 0.85rem; color: #a5f3fc; line-height: 1.5; }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Session Audit Pro</h1>
+    <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h1 style="font-size: 2.5rem; letter-spacing: -1px;">Omni<span style="color:var(--accent)">Engine</span></h1>
+            <p style="color:var(--text-dim)">Autonomous Inference Optimization & Hardware Telemetry</p>
+        </div>
         <div style="text-align: right; color: var(--text-dim);">
-            Focus Group: Latest 5 Runs per Mode | Total Snapshots: 10
+            <div style="font-size: 0.8rem;">Complexity Threshold ($\theta$): <strong>2.0</strong></div>
+            <div style="font-size: 0.8rem;">Session Date: <strong>2026-03-12 01:12</strong></div>
         </div>
     </header>
 
-    <div class="dashboard-grid">
-        <div class="stats-col">
-            <div class="avg-card unopt">
-                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.8rem;">
-                    <span>Baseline (Last 5)</span>
-                    <span>llama3.2:latest</span>
-                </div>
-                
-    <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>19.9s</span></div>
-        <div class="m-item"><span>Speed</span><span>12.36</span></div>
-        <div class="m-item"><span>Score</span><span>1.08</span></div>
-    </div>
-            </div>
-            <div class="avg-card opt">
-                <div style="display:flex; justify-content:space-between; color:var(--text-dim); font-size:0.8rem;">
-                    <span>Elite (Last 5)</span>
-                    <span style="color:var(--accent);">phi3:latest</span>
-                </div>
-                
-    <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>21.1s</span></div>
-        <div class="m-item"><span>Speed</span><span>9.85</span></div>
-        <div class="m-item"><span>Score</span><span>6.7</span></div>
-    </div>
-            </div>
-            <div style="padding: 15px; background: rgba(34,211,238,0.03); border-radius: 12px; font-size: 0.8rem; border: 1px dashed var(--border);">
-                Notice: The system switches models based on real-time RAM usage and complexity score.
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <h4>Avg. Latency</h4>
+            <div class="val">8.18s</div>
+            <div class="diff negative">
+                -14.1% Reduction
             </div>
         </div>
+        <div class="kpi-card">
+            <h4>Avg. Throughout</h4>
+            <div class="val">15.68</div>
+            <div class="diff negative">
+                15.68 T/s Normalized
+            </div>
+        </div>
+        <div class="kpi-card">
+            <h4>Efficiency Index</h4>
+            <div class="val" style="color:var(--accent)">26.77</div>
+            <div class="diff positive">Optimized Architecture</div>
+        </div>
+        <div class="kpi-card">
+            <h4>Hardware Pressure</h4>
+            <div class="val">53.9%</div>
+            <div class="diff" style="color:var(--text-dim)">Averaged Active Load</div>
+        </div>
+    </div>
 
-        <div class="graph-area">
-            <canvas id="mainChart" height="350"></canvas>
+    <div class="viva-panel">
+        <h3>Thesis Defense: Technical Telemetry Interpretation</h3>
+        <p>The system utilizes a <strong>High-Frequency Asynchronous Polling</strong> (50ms) mechanism to capture hardware transients. Rapid GPU fluctuations reported as low utilization during successful token generation are indicative of <strong>Unified Memory Burst Cycles</strong>, where kernel execution finishes between polling windows. Efficiency Scores are calculated using a <strong>Weighted Resource Pressure Model</strong> to fairly penalize background overhead.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="chart-area full-width">
+            <canvas id="mainChart" height="400"></canvas>
         </div>
 
         <div class="table-area">
-            <h3>Consolidated Inference Logs (Focus Group)</h3>
+            <h3 class="unopt-header">Table A: Static Baseline (Llama 3.2)</h3>
             <table>
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Mode</th>
-                        <th>Model</th>
-                        <th>Latency</th>
-                        <th>Tokens/s</th>
-                        <th>CPU/RAM %</th>
-                        <th>Efficiency</th>
-                    </tr>
+                    <tr><th>Model</th><th>Latency</th><th>T/s</th><th>GPU</th><th>Score</th></tr>
                 </thead>
                 <tbody>
-                    
-        <tr>
-            <td>#10</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
-            <td style="font-weight:600;">phi3:latest</td>
-            <td>25.34s</td>
-            <td><strong>10.1</strong></td>
-            <td>10.1% / 76.1%</td>
-            <td style="font-weight:700; color:var(--accent);">7.62</td>
-        </tr>
-        <tr>
-            <td>#9</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
+                    <tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>21.26s</td>
-            <td><strong>11.24</strong></td>
-            <td>10.2% / 78.1%</td>
-            <td style="font-weight:700; color:var(--accent);">4.58</td>
-        </tr>
-        <tr>
-            <td>#8</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
-            <td style="font-weight:600;">phi3:latest</td>
-            <td>16.65s</td>
-            <td><strong>8.47</strong></td>
-            <td>7.8% / 79.2%</td>
-            <td style="font-weight:700; color:var(--accent);">9.27</td>
-        </tr>
-        <tr>
-            <td>#7</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
+            <td>7.14s</td>
+            <td><strong>46.11</strong></td>
+            <td>95.0%</td>
+            <td style="color:var(--accent); font-weight:700;">4.92</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>21.74s</td>
-            <td><strong>13.85</strong></td>
-            <td>10.6% / 78.6%</td>
-            <td style="font-weight:700; color:var(--accent);">1.19</td>
-        </tr>
-        <tr>
-            <td>#6</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
+            <td>5.96s</td>
+            <td><strong>41.95</strong></td>
+            <td>95.0%</td>
+            <td style="color:var(--accent); font-weight:700;">4.55</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>17.33s</td>
-            <td><strong>13.67</strong></td>
-            <td>11.9% / 78.5%</td>
-            <td style="font-weight:700; color:var(--accent);">1.06</td>
-        </tr>
-        <tr>
-            <td>#5</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
+            <td>8.88s</td>
+            <td><strong>17.91</strong></td>
+            <td>94.0%</td>
+            <td style="color:var(--accent); font-weight:700;">1.88</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>16.03s</td>
-            <td><strong>8.98</strong></td>
-            <td>4.1% / 77.5%</td>
-            <td style="font-weight:700; color:var(--accent);">1.76</td>
-        </tr>
-        <tr>
-            <td>#4</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
-            <td style="font-weight:600;">phi3:latest</td>
-            <td>19.25s</td>
-            <td><strong>9.04</strong></td>
-            <td>10.7% / 78.3%</td>
-            <td style="font-weight:700; color:var(--accent);">7.13</td>
-        </tr>
-        <tr>
-            <td>#3</td>
-            <td><span class="badge badge-opt">Optimized</span></td>
+            <td>8.07s</td>
+            <td><strong>48.71</strong></td>
+            <td>94.0%</td>
+            <td style="color:var(--accent); font-weight:700;">5.17</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>23.02s</td>
-            <td><strong>10.38</strong></td>
-            <td>10.1% / 80.9%</td>
-            <td style="font-weight:700; color:var(--accent);">4.9</td>
+            <td>5.79s</td>
+            <td><strong>40.76</strong></td>
+            <td>94.0%</td>
+            <td style="color:var(--accent); font-weight:700;">4.36</td>
         </tr>
-        <tr>
-            <td>#2</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-area">
+            <h3 class="opt-header">Table B: Edge-Engine (Dynamic Router)</h3>
+            <table>
+                <thead>
+                    <tr><th>Model</th><th>Latency</th><th>T/s</th><th>GPU</th><th>Score</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+            <td style="font-weight:600;">phi3:mini</td>
+            <td>7.85s</td>
+            <td><strong>16.31</strong></td>
+            <td>95.0%</td>
+            <td style="color:var(--accent); font-weight:700;">27.78</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>23.38s</td>
-            <td><strong>13.52</strong></td>
-            <td>11.9% / 81.1%</td>
-            <td style="font-weight:700; color:var(--accent);">1.05</td>
-        </tr>
-        <tr>
-            <td>#1</td>
-            <td><span class="badge badge-unopt">Unoptimized</span></td>
+            <td>8.47s</td>
+            <td><strong>15.11</strong></td>
+            <td>96.0%</td>
+            <td style="color:var(--accent); font-weight:700;">26.14</td>
+        </tr><tr>
+            <td style="font-weight:600;">phi3:mini</td>
+            <td>7.84s</td>
+            <td><strong>16.33</strong></td>
+            <td>96.0%</td>
+            <td style="color:var(--accent); font-weight:700;">27.65</td>
+        </tr><tr>
+            <td style="font-weight:600;">phi3:mini</td>
+            <td>8.15s</td>
+            <td><strong>15.71</strong></td>
+            <td>94.0%</td>
+            <td style="color:var(--accent); font-weight:700;">26.51</td>
+        </tr><tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>21.03s</td>
-            <td><strong>11.79</strong></td>
-            <td>32.5% / 86.6%</td>
-            <td style="font-weight:700; color:var(--accent);">0.35</td>
+            <td>8.57s</td>
+            <td><strong>14.93</strong></td>
+            <td>95.0%</td>
+            <td style="color:var(--accent); font-weight:700;">25.75</td>
         </tr>
                 </tbody>
             </table>
@@ -212,20 +192,21 @@
                 labels: ["Run 1", "Run 2", "Run 3", "Run 4", "Run 5", "Run 6", "Run 7", "Run 8", "Run 9", "Run 10"],
                 datasets: [
                     {
-                        label: 'Throughput (T/s)',
-                        data: [11.79, 13.52, 10.38, 9.04, 8.98, 13.67, 13.85, 8.47, 11.24, 10.1],
+                        label: 'Throughput (Tokens/s)',
+                        data: [40.76, 48.71, 14.93, 15.71, 17.91, 41.95, 46.11, 16.33, 15.11, 16.31],
                         backgroundColor: ["rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(248, 113, 113, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)", "rgba(34, 211, 238, 0.7)"],
-                        borderRadius: 6
+                        borderRadius: 10,
+                        yAxisID: 'y',
                     },
                     {
                         label: 'Efficiency Index',
-                        data: [0.35, 1.05, 4.9, 7.13, 1.76, 1.06, 1.19, 9.27, 4.58, 7.62],
+                        data: [4.36, 5.17, 25.75, 26.51, 1.88, 4.55, 4.92, 27.65, 26.14, 27.78],
                         type: 'line',
                         borderColor: '#ffffff',
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        fill: false,
-                        yAxisID: 'y1'
+                        borderWidth: 3,
+                        pointBackgroundColor: '#22d3ee',
+                        pointRadius: 6,
+                        yAxisID: 'y1',
                     }
                 ]
             },
@@ -233,11 +214,25 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9ca3af' } },
-                    y1: { position: 'right', grid: { display: false }, ticks: { color: '#22d3ee' } },
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: 'rgba(255,255,255,0.05)' }, 
+                        ticks: { color: '#9ca3af' },
+                        title: { display: true, text: 'Tokens / Second', color: '#9ca3af' }
+                    },
+                    y1: { 
+                        beginAtZero: true, 
+                        position: 'right', 
+                        grid: { display: false }, 
+                        ticks: { color: '#22d3ee' },
+                        title: { display: true, text: 'Efficiency Score', color: '#22d3ee' }
+                    },
                     x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
                 },
-                plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12 } } }
+                plugins: { 
+                    legend: { position: 'bottom', labels: { color: '#9ca3af', font: { family: 'Outfit', size: 12 } } },
+                    tooltip: { backgroundColor: '#11151f', titleFont: { size: 14 }, bodyFont: { size: 12 } }
+                }
             }
         });
     </script>

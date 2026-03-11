@@ -256,6 +256,13 @@ def main():
     print(f"Starting analysis for prompt: '{prompt}' (Session: 10 Runs Total)")
     benchmark = Benchmark()
     
+    # NEW: Warm-up Phase to avoid Cold-Start Telemetry Lag
+    print("\n--- Initializing Session (Warm-up Phase) ---")
+    print("Pre-loading models into VRAM to eliminate cold-start lag...")
+    benchmark.run_inference("Warm up", use_optimizer=False, static_model="llama3.2:latest", is_warmup=True)
+    benchmark.run_inference("Warm up", use_optimizer=False, static_model="phi3:mini", is_warmup=True)
+    print("Environment stabilized. Starting Benchmark.")
+
     # Run 5 Unoptimized Baseline iterations
     print("\n--- Running 5 Unoptimized Baseline Iterations ---")
     for i in range(1, 6):

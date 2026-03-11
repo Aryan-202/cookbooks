@@ -10,9 +10,12 @@ def main():
         "Summarize the plot of the Matrix."
     ]
     
+    print("\n--- Initializing Session (Warm-up Phase) ---")
+    benchmark.run_inference("Warm up", use_optimizer=False, static_model="llama3.2:latest", is_warmup=True)
+    benchmark.run_inference("Warm up", use_optimizer=False, static_model="phi3:mini", is_warmup=True)
+
     print("\n--- Running Unoptimized Baseline ---")
     for prompt in prompts:
-        # We explicitly show unoptimized behaviour on a typical model
         benchmark.run_inference(prompt, use_optimizer=False, static_model="llama3.2:latest")
         
     print("\n--- Running Optimized Edge Engine ---")

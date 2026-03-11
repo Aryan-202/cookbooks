@@ -1,6 +1,6 @@
 {
   "models": {
-    "phi3:latest": {
+    "phi3:mini": {
       "type": "small",
       "default_ctx": 4096,
       "description": "Short prompts, low compute"
