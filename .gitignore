@@ -10,3 +10,9 @@ env/
 logs/
 graphs/outputs/
 .DS_Store
+
+# GPUtil
+GPUtil/
+GPUtil.egg-info/
+*.egg-info/
+*.dist-info/

@@ -281,7 +281,8 @@ def main():
     generate_dashboard()
     
     output_file = "index.html"
-    print(f"\n✅ Optimization analysis complete. Open {os.path.abspath(output_file)} in your browser to view the generated graphs.")
+    abs_path = os.path.abspath(output_file).replace('\\', '/')
+    print(f"\n✅ Optimization analysis complete. View your results at: file:///{abs_path}")
 
 if __name__ == "__main__":
     main()

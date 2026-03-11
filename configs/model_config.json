@@ -1,6 +1,6 @@
 {
   "models": {
-    "phi3:mini": {
+    "phi3:latest": {
       "type": "small",
       "default_ctx": 4096,
       "description": "Short prompts, low compute"
@@ -13,6 +13,8 @@
   },
   "optimization_thresholds": {
     "high_cpu_usage": 80,
-    "high_ram_usage": 70
+    "high_ram_usage": 70,
+    "high_gpu_usage": 80,
+    "low_gpu_usage": 50
   }
 }
