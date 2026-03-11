@@ -5,18 +5,25 @@ class OllamaClient:
     def __init__(self, base_url="http://localhost:11434"):
         self.base_url = base_url
 
-    def generate(self, model, prompt, num_ctx, num_predict, temperature):
+    def generate(self, model, prompt, num_ctx, num_predict, temperature, top_k=40, top_p=0.9, num_thread=None, num_batch=128):
         """Sends a generation request to the local Ollama instance."""
         payload = {
             "model": model,
             "prompt": prompt,
             "stream": False,
+            "keep_alive": "5m", # Keep models loaded in memory longer
             "options": {
                 "num_ctx": num_ctx,
                 "num_predict": num_predict,
-                "temperature": temperature
+                "temperature": temperature,
+                "top_k": top_k,
+                "top_p": top_p,
+                "num_batch": num_batch
             }
         }
+        if num_thread is not None:
+            payload["options"]["num_thread"] = num_thread
+
         
         start_time = time.time()
         try:
