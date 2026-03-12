@@ -78,7 +78,7 @@
     <header>
         <h1>Session Comparative Analysis</h1>
         <div style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
-            Configuration: $\theta$=2.0 | Session: Latest 5 vs 5 Comparison
+            GPU Stress Analysis: <span style="color:#fbbf24;">● Optimized vs Baseline Burst</span> | Session: Latest 5 vs 5
         </div>
     </header>
 
@@ -91,13 +91,13 @@
                 </div>
                 
     <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>6.64s</span></div>
-        <div class="m-item"><span>Speed</span><span>37.48</span></div>
-        <div class="m-item"><span>Score</span><span>6.17</span></div>
+        <div class="m-item"><span>Latency</span><span>11.06s</span></div>
+        <div class="m-item"><span>Speed</span><span>23.0</span></div>
+        <div class="m-item"><span>Score</span><span>4.21</span></div>
     </div>
     <div class="gpu-row">
-        <div class="m-item"><span>Avg GPU</span><span>49.1%</span></div>
-        <div class="m-item"><span>Avg VRAM</span><span>50.2%</span></div>
+        <div class="m-item"><span>Avg GPU</span><span>61.6%</span></div>
+        <div class="m-item"><span>Avg VRAM</span><span>34.9%</span></div>
     </div>
             </div>
             <div class="avg-card opt">
@@ -107,13 +107,13 @@
                 </div>
                 
     <div class="metrics-grid">
-        <div class="m-item"><span>Latency</span><span>6.79s</span></div>
-        <div class="m-item"><span>Speed</span><span>23.59</span></div>
-        <div class="m-item"><span>Score</span><span>58.72</span></div>
+        <div class="m-item"><span>Latency</span><span>8.27s</span></div>
+        <div class="m-item"><span>Speed</span><span>17.83</span></div>
+        <div class="m-item"><span>Score</span><span>65.35</span></div>
     </div>
     <div class="gpu-row">
-        <div class="m-item"><span>Avg GPU</span><span>29.0%</span></div>
-        <div class="m-item"><span>Avg VRAM</span><span>27.7%</span></div>
+        <div class="m-item"><span>Avg GPU</span><span>44.1%</span></div>
+        <div class="m-item"><span>Avg VRAM</span><span>25.8%</span></div>
     </div>
             </div>
             <div class="notice-box">
@@ -145,38 +145,38 @@
                     
         <tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>7.25s</td>
-            <td><strong>46.89</strong></td>
+            <td>11.47s</td>
+            <td><strong>27.3</strong></td>
+            <td>76.7%</td>
+            <td style="font-weight:700; color:var(--accent);">4.54</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>9.61s</td>
+            <td><strong>25.82</strong></td>
+            <td>67.7%</td>
+            <td style="font-weight:700; color:var(--accent);">4.67</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>13.78s</td>
+            <td><strong>9.29</strong></td>
+            <td>22.6%</td>
+            <td style="font-weight:700; color:var(--accent);">2.66</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">llama3.2:latest</td>
+            <td>10.84s</td>
+            <td><strong>27.12</strong></td>
             <td>75.6%</td>
-            <td style="font-weight:700; color:var(--accent);">7.93</td>
+            <td style="font-weight:700; color:var(--accent);">4.55</td>
         </tr>
         <tr>
             <td style="font-weight:600;">llama3.2:latest</td>
-            <td>4.17s</td>
-            <td><strong>31.16</strong></td>
-            <td>22.4%</td>
-            <td style="font-weight:700; color:var(--accent);">9.51</td>
-        </tr>
-        <tr>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>8.52s</td>
-            <td><strong>18.43</strong></td>
-            <td>22.0%</td>
-            <td style="font-weight:700; color:var(--accent);">5.36</td>
-        </tr>
-        <tr>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>6.62s</td>
-            <td><strong>45.47</strong></td>
-            <td>52.7%</td>
-            <td style="font-weight:700; color:var(--accent);">3.79</td>
-        </tr>
-        <tr>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>6.62s</td>
-            <td><strong>45.45</strong></td>
-            <td>72.8%</td>
-            <td style="font-weight:700; color:var(--accent);">4.25</td>
+            <td>9.58s</td>
+            <td><strong>25.48</strong></td>
+            <td>65.2%</td>
+            <td style="font-weight:700; color:var(--accent);">4.64</td>
         </tr>
                 </tbody>
             </table>
@@ -199,38 +199,38 @@
                     
         <tr>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>7.81s</td>
-            <td><strong>16.4</strong></td>
-            <td>30.4%</td>
-            <td style="font-weight:700; color:var(--accent);">71.39</td>
-        </tr>
-        <tr>
-            <td style="font-weight:600;">llama3.2:latest</td>
-            <td>9.72s</td>
-            <td><strong>24.68</strong></td>
-            <td>38.2%</td>
-            <td style="font-weight:700; color:var(--accent);">50.12</td>
+            <td>5.64s</td>
+            <td><strong>22.7</strong></td>
+            <td>79.8%</td>
+            <td style="font-weight:700; color:var(--accent);">60.26</td>
         </tr>
         <tr>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>8.04s</td>
-            <td><strong>15.91</strong></td>
-            <td>12.9%</td>
-            <td style="font-weight:700; color:var(--accent);">94.24</td>
+            <td>5.67s</td>
+            <td><strong>22.59</strong></td>
+            <td>46.3%</td>
+            <td style="font-weight:700; color:var(--accent);">82.83</td>
         </tr>
         <tr>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>4.22s</td>
-            <td><strong>30.33</strong></td>
-            <td>31.8%</td>
-            <td style="font-weight:700; color:var(--accent);">35.94</td>
+            <td>12.2s</td>
+            <td><strong>10.49</strong></td>
+            <td>23.8%</td>
+            <td style="font-weight:700; color:var(--accent);">48.1</td>
         </tr>
         <tr>
             <td style="font-weight:600;">phi3:mini</td>
-            <td>4.18s</td>
-            <td><strong>30.64</strong></td>
-            <td>31.8%</td>
-            <td style="font-weight:700; color:var(--accent);">41.9</td>
+            <td>5.58s</td>
+            <td><strong>22.94</strong></td>
+            <td>46.3%</td>
+            <td style="font-weight:700; color:var(--accent);">86.54</td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;">phi3:mini</td>
+            <td>12.28s</td>
+            <td><strong>10.42</strong></td>
+            <td>24.4%</td>
+            <td style="font-weight:700; color:var(--accent);">49.03</td>
         </tr>
                 </tbody>
             </table>
@@ -246,40 +246,77 @@
                 datasets: [
                     {
                         label: 'Throughput (Tokens/s)',
-                        data: [45.45, 45.47, 30.64, 30.33, 18.43, 31.16, 46.89, 15.91, 24.68, 16.4],
-                        backgroundColor: ["rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(248, 113, 113, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)", "rgba(34, 211, 238, 0.6)"],
+                        data: [25.48, 27.12, 10.42, 22.94, 9.29, 25.82, 27.3, 10.49, 22.59, 22.7],
+                        backgroundColor: ["rgba(244, 63, 94, 0.4)", "rgba(244, 63, 94, 0.4)", "rgba(34, 211, 238, 0.4)", "rgba(34, 211, 238, 0.4)", "rgba(244, 63, 94, 0.4)", "rgba(244, 63, 94, 0.4)", "rgba(244, 63, 94, 0.4)", "rgba(34, 211, 238, 0.4)", "rgba(34, 211, 238, 0.4)", "rgba(34, 211, 238, 0.4)"],
+                        borderColor: ["#f43f5e", "#f43f5e", "#22d3ee", "#22d3ee", "#f43f5e", "#f43f5e", "#f43f5e", "#22d3ee", "#22d3ee", "#22d3ee"],
+                        borderWidth: 1,
                         borderRadius: 6,
-                        order: 2
+                        order: 3
+                    },
+                    {
+                        label: 'GPU Stress (%)',
+                        data: [86.72000000000001, 98.16, 17.08, 32.41, 39.86, 89.47000000000001, 99.37, 16.66, 32.41, 55.85999999999999],
+                        type: 'line',
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fbbf24',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'yStress',
+                        order: 1
                     },
                     {
                         label: 'Efficiency Index',
-                        data: [4.25, 3.79, 41.9, 35.94, 5.36, 9.51, 7.93, 94.24, 50.12, 71.39],
+                        data: [4.64, 4.55, 49.03, 86.54, 2.66, 4.67, 4.54, 48.1, 82.83, 60.26],
                         type: 'line',
                         borderColor: '#ffffff',
+                        borderDash: [5, 5],
                         borderWidth: 2,
-                        pointRadius: 4,
+                        pointRadius: 0,
                         fill: false,
                         yAxisID: 'y1',
-                        order: 1
+                        order: 2
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 scales: {
                     y: { 
+                        title: { display: true, text: 'Tokens/sec', color: '#9ca3af' },
                         grid: { color: 'rgba(255,255,255,0.03)' }, 
                         ticks: { color: '#9ca3af', font: { size: 10 } }
                     },
                     y1: { 
+                        display: false,
                         position: 'right', 
-                        grid: { display: false }, 
-                        ticks: { color: '#22d3ee', font: { size: 10 } }
+                        grid: { display: false },
+                        ticks: { color: '#ffffff', font: { size: 10 } }
+                    },
+                    yStress: {
+                        position: 'right',
+                        title: { display: true, text: 'Hardware Stress Index', color: '#fbbf24' },
+                        grid: { display: false },
+                        min: 0,
+                        max: 100,
+                        ticks: { color: '#fbbf24', font: { size: 10 } }
                     },
                     x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 10 } } }
                 },
-                plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', boxWidth: 12 } } }
+                plugins: { 
+                    legend: { position: 'top', labels: { color: '#9ca3af', boxWidth: 12, usePointStyle: true } },
+                    tooltip: {
+                        backgroundColor: '#121620',
+                        titleColor: '#22d3ee',
+                        bodyColor: '#f3f4f6',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }
+                }
             }
         });
     </script>
