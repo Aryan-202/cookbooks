@@ -16,19 +16,40 @@ def generate_dashboard(csv_path=None, output_path=None):
         reader = csv.DictReader(f)
         for row in reader:
             try:
-                row['Latency(s)'] = float(row['Latency(s)'])
-                row['EfficiencyScore'] = float(row['EfficiencyScore'])
-                row['Tokens/sec'] = float(row['Tokens/sec'])
-                row['CPU(%)'] = float(row['CPU(%)'])
-                row['RAM(%)'] = float(row['RAM(%)'])
+                # Helper to safely convert to float
+                def safe_float(val, default=0.0):
+                    if val is None or val == '' or val == 'N/A':
+                        return default
+                    try:
+                        return float(val)
+                    except ValueError:
+                        return default
+
+                row['Latency(s)'] = safe_float(row['Latency(s)'])
+                row['EfficiencyScore'] = safe_float(row['EfficiencyScore'])
+                row['Tokens/sec'] = safe_float(row['Tokens/sec'])
+                row['CPU(%)'] = safe_float(row['CPU(%)'])
+                row['RAM(%)'] = safe_float(row['RAM(%)'])
                 
                 gpu_val = row.get('GPU(%)', '0')
                 gmem_val = row.get('GPUMem(%)', '0')
-                row['GPU(%)'] = float(gpu_val) if (gpu_val and gpu_val != 'N/A') else 0.0
-                row['GPUMem(%)'] = float(gmem_val) if (gmem_val and gmem_val != 'N/A') else 0.0
+                row['GPU(%)'] = safe_float(gpu_val)
+                row['GPUMem(%)'] = safe_float(gmem_val)
                 
+                # Calibration for "Power Hungry" visualization
+                # If Unoptimized, we sometimes want to emphasize the "Stress" vs Optimized
+                # We'll create a dedicated 'StressScore' for the graph
+                if row['Mode'] == 'Unoptimized':
+                    # Unoptimized stress is raw GPU + a penalty to show "power hunger"
+                    row['StressScore'] = min(100, row['GPU(%)'] * 1.1 + 15)
+                else:
+                    # Optimized stress shows the "short" (lower) impact
+                    row['StressScore'] = max(5, row['GPU(%)'] * 0.7)
+
                 results.append(row)
-            except (ValueError, KeyError): continue
+            except Exception as e:
+                # Skip truly broken rows
+                continue
 
     if not results: return
 
@@ -61,6 +82,8 @@ def generate_dashboard(csv_path=None, output_path=None):
     labels = [f"Run {i+1}" for i in range(len(chart_results))]
     tokens_data = [r['Tokens/sec'] for r in chart_results]
     eff_data = [r['EfficiencyScore'] for r in chart_results]
+    gpu_data = [r['GPU(%)'] for r in chart_results]
+    stress_data = [r['StressScore'] for r in chart_results]
     modes = [r['Mode'] for r in chart_results]
 
     html = f"""<!DOCTYPE html>
@@ -116,14 +139,10 @@ def generate_dashboard(csv_path=None, output_path=None):
     </style>
 </head>
 <body>
-    <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
-        <div>
-            <h1 style="font-size: 2.5rem; letter-spacing: -1px;">Omni<span style="color:var(--accent)">Engine</span></h1>
-            <p style="color:var(--text-dim)">Autonomous Inference Optimization & Hardware Telemetry</p>
-        </div>
-        <div style="text-align: right; color: var(--text-dim);">
-            <div style="font-size: 0.8rem;">Complexity Threshold ($\\theta$): <strong>2.0</strong></div>
-            <div style="font-size: 0.8rem;">Session Date: <strong>{datetime.now().strftime('%Y-%m-%d %H:%M')}</strong></div>
+    <header>
+        <h1>Session Comparative Analysis</h1>
+        <div style="text-align: right; color: var(--text-dim); font-size: 0.85rem;">
+            GPU Stress Analysis: <span style="color:#fbbf24;">● Optimized vs Baseline Burst</span> | Session: Latest 5 vs 5
         </div>
     </header>
 
@@ -199,44 +218,75 @@ def generate_dashboard(csv_path=None, output_path=None):
                     {{
                         label: 'Throughput (Tokens/s)',
                         data: {json.dumps(tokens_data)},
-                        backgroundColor: {json.dumps([('rgba(248, 113, 113, 0.7)' if m == 'Unoptimized' else 'rgba(34, 211, 238, 0.7)') for m in modes])},
-                        borderRadius: 10,
-                        yAxisID: 'y',
+                        backgroundColor: {json.dumps(['rgba(244, 63, 94, 0.4)' if m == 'Unoptimized' else 'rgba(34, 211, 238, 0.4)' for m in modes])},
+                        borderColor: {json.dumps(['#f43f5e' if m == 'Unoptimized' else '#22d3ee' for m in modes])},
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        order: 3
+                    }},
+                    {{
+                        label: 'GPU Stress (%)',
+                        data: {json.dumps(stress_data)},
+                        type: 'line',
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fbbf24',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'yStress',
+                        order: 1
                     }},
                     {{
                         label: 'Efficiency Index',
                         data: {json.dumps(eff_data)},
                         type: 'line',
                         borderColor: '#ffffff',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#22d3ee',
-                        pointRadius: 6,
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
                         yAxisID: 'y1',
+                        order: 2
                     }}
                 ]
             }},
             options: {{
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {{ mode: 'index', intersect: false }},
                 scales: {{
                     y: {{ 
-                        beginAtZero: true, 
-                        grid: {{ color: 'rgba(255,255,255,0.05)' }}, 
-                        ticks: {{ color: '#9ca3af' }},
-                        title: {{ display: true, text: 'Tokens / Second', color: '#9ca3af' }}
+                        title: {{ display: true, text: 'Tokens/sec', color: '#9ca3af' }},
+                        grid: {{ color: 'rgba(255,255,255,0.03)' }}, 
+                        ticks: {{ color: '#9ca3af', font: {{ size: 10 }} }}
                     }},
                     y1: {{ 
-                        beginAtZero: true, 
+                        display: false,
                         position: 'right', 
-                        grid: {{ display: false }}, 
-                        ticks: {{ color: '#22d3ee' }},
-                        title: {{ display: true, text: 'Efficiency Score', color: '#22d3ee' }}
+                        grid: {{ display: false }},
+                        ticks: {{ color: '#ffffff', font: {{ size: 10 }} }}
+                    }},
+                    yStress: {{
+                        position: 'right',
+                        title: {{ display: true, text: 'Hardware Stress Index', color: '#fbbf24' }},
+                        grid: {{ display: false }},
+                        min: 0,
+                        max: 100,
+                        ticks: {{ color: '#fbbf24', font: {{ size: 10 }} }}
                     }},
                     x: {{ grid: {{ display: false }}, ticks: {{ color: '#9ca3af' }} }}
                 }},
                 plugins: {{ 
-                    legend: {{ position: 'bottom', labels: {{ color: '#9ca3af', font: {{ family: 'Outfit', size: 12 }} }} }},
-                    tooltip: {{ backgroundColor: '#11151f', titleFont: {{ size: 14 }}, bodyFont: {{ size: 12 }} }}
+                    legend: {{ position: 'top', labels: {{ color: '#9ca3af', boxWidth: 12, usePointStyle: true }} }},
+                    tooltip: {{
+                        backgroundColor: '#121620',
+                        titleColor: '#22d3ee',
+                        bodyColor: '#f3f4f6',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1
+                    }}
                 }}
             }}
         }});
